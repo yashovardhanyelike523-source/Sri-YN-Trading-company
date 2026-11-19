@@ -6,211 +6,29 @@
 
 import { databases, storage, APPWRITE_DATABASE_ID, APPWRITE_COLLECTIONS, APPWRITE_BUCKET_ID, ID, Query } from './appwrite';
 
-// Local Storage Keys for offline persistence & instant load
-const LS_TXNS = 'sri_yn_txns_v1';
-const LS_LOTS = 'sri_yn_lots_v1';
-const LS_STORAGES = 'sri_yn_storages_v1';
-const LS_PARTIES = 'sri_yn_parties_v1';
-const LS_BILLS = 'sri_yn_bills_v1';
+// Local Storage Keys for clean client production slate
+const LS_TXNS = 'sri_yn_txns_v2_clean';
+const LS_LOTS = 'sri_yn_lots_v2_clean';
+const LS_STORAGES = 'sri_yn_storages_v2_clean';
+const LS_PARTIES = 'sri_yn_parties_v2_clean';
+const LS_BILLS = 'sri_yn_bills_v2_clean';
 
-// Initial Demonstration Data for SRI YN TRADING COMPANY
-const INITIAL_STORAGES = [
-  {
-    id: 'CS-01',
-    name: 'Sri Venkateswara Cold Storage',
-    location: 'Guntur - Miryalaguda Highway, AP',
-    contact_person: 'Subba Rao (Manager)',
-    phone: '9848011223',
-    capacity_kg: 500000,
-    remarks: 'Chamber 1 to 4 with humidity control',
-  },
-  {
-    id: 'CS-02',
-    name: 'Tirumala Agri Cold Storage',
-    location: 'Chilakaluripet Road, Guntur',
-    contact_person: 'Venkatesh',
-    phone: '9848099887',
-    capacity_kg: 350000,
-    remarks: 'Chamber A & B (Premium Teja preservation)',
-  },
-  {
-    id: 'CS-03',
-    name: 'Bhavani Cold Storage & Warehousing',
-    location: 'Khammam By-Pass Road',
-    contact_person: 'Ramanaiah',
-    phone: '9440155667',
-    capacity_kg: 400000,
-    remarks: 'Dedicated stemless chilli bay',
-  },
-];
+// CLEAN SLATE INITIAL STATE FOR CLIENT HANDOVER (ALL TABLES = 0)
+const INITIAL_STORAGES = [];
+const INITIAL_LOTS = [];
+const INITIAL_PARTIES = [];
+const INITIAL_TXNS = [];
+const INITIAL_BILLS = [];
 
-const INITIAL_LOTS = [
-  {
-    id: 'LOT-01',
-    lot_number: 'LOT-YN-2026-101',
-    lot_no: 'LOT-YN-2026-101',
-    cold_storage_name: 'Sri Venkateswara Cold Storage',
-    cold_storage: 'Sri Venkateswara Cold Storage',
-    item_name: 'Red Chilli Teja (S17)',
-    current_stock_kg: 8500,
-    initial_stock_kg: 10000,
-    purchase_rate: 195,
-    remarks: 'Prime deep red quality, moisture 10%',
-    status: 'active',
-  },
-  {
-    id: 'LOT-02',
-    lot_number: 'LOT-YN-2026-102',
-    lot_no: 'LOT-YN-2026-102',
-    cold_storage_name: 'Tirumala Agri Cold Storage',
-    cold_storage: 'Tirumala Agri Cold Storage',
-    item_name: 'Red Chilli Byadgi (5531)',
-    current_stock_kg: 5200,
-    initial_stock_kg: 6000,
-    purchase_rate: 240,
-    remarks: 'High color oil value, deluxe grade',
-    status: 'active',
-  },
-  {
-    id: 'LOT-03',
-    lot_number: 'LOT-YN-2026-103',
-    lot_no: 'LOT-YN-2026-103',
-    cold_storage_name: 'Sri Venkateswara Cold Storage',
-    cold_storage: 'Sri Venkateswara Cold Storage',
-    item_name: 'Red Chilli 334 / S10',
-    current_stock_kg: 12000,
-    initial_stock_kg: 15000,
-    purchase_rate: 180,
-    remarks: 'Medium pungency, standard market yard quality',
-    status: 'active',
-  },
-  {
-    id: 'LOT-04',
-    lot_number: 'LOT-YN-2026-104',
-    lot_no: 'LOT-YN-2026-104',
-    cold_storage_name: 'Bhavani Cold Storage & Warehousing',
-    cold_storage: 'Bhavani Cold Storage & Warehousing',
-    item_name: 'Red Chilli Fatki / Phatki',
-    current_stock_kg: 3400,
-    initial_stock_kg: 4000,
-    purchase_rate: 125,
-    remarks: 'Powder blending grade',
-    status: 'active',
-  },
-];
+// Clean any legacy demo keys
+try {
+  localStorage.removeItem('sri_yn_txns_v1');
+  localStorage.removeItem('sri_yn_lots_v1');
+  localStorage.removeItem('sri_yn_storages_v1');
+  localStorage.removeItem('sri_yn_parties_v1');
+  localStorage.removeItem('sri_yn_bills_v1');
+} catch {}
 
-const INITIAL_PARTIES = [
-  {
-    id: 'P-01',
-    name: 'Sri Rama Traders',
-    type: 'customer',
-    phone: '9848012345',
-    village_city: 'Guntur APMC Yard',
-    outstanding_balance: 45000,
-  },
-  {
-    id: 'P-02',
-    name: 'Balaji Spices & Export Ltd',
-    type: 'customer',
-    phone: '9849067890',
-    village_city: 'Chennai Port Hub',
-    outstanding_balance: 120000,
-  },
-  {
-    id: 'P-03',
-    name: 'Venkata Rao (Farmer)',
-    type: 'supplier',
-    phone: '9440188990',
-    village_city: 'Miryalaguda, Nalgonda',
-    outstanding_balance: 28000,
-  },
-  {
-    id: 'P-04',
-    name: 'Laxminarayana Chilli Farm',
-    type: 'supplier',
-    phone: '9440233445',
-    village_city: 'Warangal Mandi',
-    outstanding_balance: 0,
-  },
-];
-
-const INITIAL_TXNS = [
-  {
-    id: 'TXN-01',
-    transaction_id: 'YN-S-20261114-1001',
-    transaction_date: '2026-11-14',
-    date: '2026-11-14',
-    transaction_type: 'SALE',
-    type: 'SALE',
-    party_name: 'Sri Rama Traders',
-    party_phone: '9848012345',
-    item_name: 'Red Chilli Teja (S17)',
-    cold_storage_name: 'Sri Venkateswara Cold Storage',
-    cold_storage: 'Sri Venkateswara Cold Storage',
-    lot_number: 'LOT-YN-2026-101',
-    lot_no: 'LOT-YN-2026-101',
-    quantity_kg: 1500,
-    rate_per_kg: 215,
-    total_amount: 322500,
-    paid_amount: 277500,
-    balance_amount: 45000,
-    bill_number: 'BILL-20261114-1001',
-    bill_no: 'BILL-20261114-1001',
-    payment_mode: 'UPI / PhonePe',
-    remarks: 'Dispatched in Lorry AP-07-TJ-4455',
-    status: 'active',
-  },
-  {
-    id: 'TXN-02',
-    transaction_id: 'YN-P-20261112-2001',
-    transaction_date: '2026-11-12',
-    date: '2026-11-12',
-    transaction_type: 'PURCHASE',
-    type: 'PURCHASE',
-    party_name: 'Venkata Rao (Farmer)',
-    party_phone: '9440188990',
-    item_name: 'Red Chilli Teja (S17)',
-    cold_storage_name: 'Sri Venkateswara Cold Storage',
-    cold_storage: 'Sri Venkateswara Cold Storage',
-    lot_number: 'LOT-YN-2026-101',
-    lot_no: 'LOT-YN-2026-101',
-    quantity_kg: 10000,
-    rate_per_kg: 195,
-    total_amount: 1950000,
-    paid_amount: 1922000,
-    balance_amount: 28000,
-    bill_number: 'PUR-20261112-2001',
-    bill_no: 'PUR-20261112-2001',
-    payment_mode: 'Bank Transfer (NEFT/RTGS)',
-    remarks: 'Direct farmer intake, weighbridge slip #882',
-    status: 'active',
-  },
-  {
-    id: 'TXN-03',
-    transaction_id: 'YN-R-20261113-3001',
-    transaction_date: '2026-11-13',
-    date: '2026-11-13',
-    transaction_type: 'RECEIPT',
-    type: 'RECEIPT',
-    party_name: 'Balaji Spices & Export Ltd',
-    party_phone: '9849067890',
-    item_name: 'Payment Receipt',
-    cold_storage_name: '',
-    cold_storage: '',
-    lot_number: '',
-    lot_no: '',
-    quantity_kg: 0,
-    rate_per_kg: 0,
-    total_amount: 80000,
-    paid_amount: 80000,
-    balance_amount: 0,
-    bill_number: 'RCT-20261113-3001',
-    bill_no: 'RCT-20261113-3001',
-    payment_mode: 'Bank Transfer (NEFT/RTGS)',
-    remarks: 'Part payment against old balance',
-    status: 'active',
-  },
-];
 
 // Helper to get local data safely
 function getLocal(key, defaultVal) {
