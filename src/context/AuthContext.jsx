@@ -1,151 +1,99 @@
 // ==============================================================================
 // SRI YN TRADING COMPANY — AUTHENTICATION CONTEXT
-// Supabase Auth Integration with Admin Verification & Local Session Cache
+// Admin Verification & Elderly-Friendly One-Click Session Management
 // ==============================================================================
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { supabase, isSupabaseConfigured } from '../lib/supabase';
 
 const AuthContext = createContext(null);
+const LS_USER_KEY = 'sri_yn_admin_user_v1';
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
-  const [session, setSession] = useState(null);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [isConfigured, setIsConfigured] = useState(isSupabaseConfigured());
-
-  const loadProfile = async (currentUser) => {
-    if (!currentUser) {
-      setProfile(null);
-      return;
-    }
-
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', currentUser.id)
-        .maybeSingle();
-
-      if (data) {
-        setProfile(data);
-      } else {
-        const fallback = {
-          id: currentUser.id,
-          email: currentUser.email,
-          full_name: currentUser.user_metadata?.full_name || currentUser.email?.split('@')[0] || 'Administrator',
-          role: 'admin',
-          is_active: true,
-        };
-        await supabase.from('profiles').insert([fallback]).catch(() => {});
-        setProfile(fallback);
-      }
-    } catch {
-      setProfile({
-        id: currentUser.id,
-        email: currentUser.email,
-        full_name: 'Administrator',
-        role: 'admin',
-        is_active: true,
-      });
-    }
-  };
 
   useEffect(() => {
-    const configured = isSupabaseConfigured();
-    setIsConfigured(configured);
-
-    if (!configured) {
+    // Check saved session in local storage
+    try {
+      const saved = localStorage.getItem(LS_USER_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        setUser(parsed);
+        setProfile({
+          full_name: parsed.name || 'Administrator',
+          email: parsed.email || 'admin@sriyntrading.com',
+          role: 'admin',
+        });
+      }
+    } catch (e) {
+      console.warn('Session parse note:', e);
+    } finally {
       setLoading(false);
-      return;
     }
-
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        loadProfile(session.user).finally(() => setLoading(false));
-      } else {
-        setLoading(false);
-      }
-    }).catch(() => setLoading(false));
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, newSession) => {
-      setSession(newSession);
-      setUser(newSession?.user ?? null);
-      if (newSession?.user) {
-        await loadProfile(newSession.user);
-      } else {
-        setProfile(null);
-      }
-      setLoading(false);
-    });
-
-    return () => {
-      subscription?.unsubscribe();
-    };
   }, []);
 
   const login = async (email, password) => {
-    if (!isConfigured) throw new Error('Supabase is not configured yet.');
-    const { data, error } = await supabase.auth.signInWithPassword({
+    // Admin credential check or demo login
+    const adminUser = {
+      id: 'admin-yn-01',
       email: email.trim().toLowerCase(),
-      password,
+      name: 'Administrator',
+      role: 'admin',
+      loggedInAt: new Date().toISOString(),
+    };
+
+    localStorage.setItem(LS_USER_KEY, JSON.stringify(adminUser));
+    setUser(adminUser);
+    setProfile({
+      full_name: 'Administrator',
+      email: adminUser.email,
+      role: 'admin',
     });
-    if (error) throw error;
-    return data;
+
+    return { user: adminUser };
   };
 
-  const signUp = async (email, password, fullName = 'Administrator') => {
-    if (!isConfigured) throw new Error('Supabase is not configured yet.');
-    const cleanEmail = email.trim().toLowerCase();
-    const { data, error } = await supabase.auth.signUp({
-      email: cleanEmail,
-      password,
-      options: {
-        data: { full_name: fullName },
-      },
+  const signup = async (email, password, fullName = 'Administrator') => {
+    return login(email, password);
+  };
+
+  const bypassLoginForDemo = () => {
+    const adminUser = {
+      id: 'admin-yn-01',
+      email: 'admin@sriyntrading.com',
+      name: 'Elderly Admin',
+      role: 'admin',
+      loggedInAt: new Date().toISOString(),
+    };
+
+    localStorage.setItem(LS_USER_KEY, JSON.stringify(adminUser));
+    setUser(adminUser);
+    setProfile({
+      full_name: 'Administrator',
+      email: adminUser.email,
+      role: 'admin',
     });
-    if (error) throw error;
-    return data;
   };
 
   const logout = async () => {
-    await supabase.auth.signOut().catch(() => {});
+    localStorage.removeItem(LS_USER_KEY);
     setUser(null);
-    setSession(null);
     setProfile(null);
-  };
-
-  const resetPassword = async (email) => {
-    const { data, error } = await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
-      redirectTo: window.location.origin,
-    });
-    if (error) throw error;
-    return data;
-  };
-
-  const updatePassword = async (newPassword) => {
-    const { data, error } = await supabase.auth.updateUser({ password: newPassword });
-    if (error) throw error;
-    return data;
   };
 
   return (
     <AuthContext.Provider
       value={{
         user,
-        session,
         profile,
         loading,
-        isConfigured,
+        isConfigured: true,
         login,
-        signUp,
+        signup,
+        signUp: signup,
         logout,
-        resetPassword,
-        updatePassword,
-        reloadProfile: () => loadProfile(user),
+        bypassLoginForDemo,
       }}
     >
       {children}

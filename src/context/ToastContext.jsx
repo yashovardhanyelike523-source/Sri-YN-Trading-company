@@ -28,7 +28,15 @@ export function ToastProvider({ children }) {
   };
 
   return (
-    <ToastContext.Provider value={{ success, error, info }}>
+    <ToastContext.Provider value={{ 
+      success, 
+      error, 
+      info, 
+      showSuccess: success, 
+      showError: error, 
+      showWarning: error, 
+      showInfo: info 
+    }}>
       {children}
       {/* Toast container on top right */}
       <div className="fixed top-5 right-5 z-50 flex flex-col gap-3 max-w-md w-full px-3 pointer-events-none">
