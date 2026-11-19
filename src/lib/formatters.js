@@ -13,6 +13,8 @@ export function formatINR(amount) {
   }).format(num);
 }
 
+export const formatCurrency = formatINR;
+
 export function formatNumber(val, decimals = 2) {
   const num = Number(val) || 0;
   return num.toLocaleString('en-IN', {
@@ -25,6 +27,11 @@ export function formatKgAndQtl(kg) {
   const numKg = Number(kg) || 0;
   const numQtl = numKg / 100;
   return `${formatNumber(numKg, 0)} kg (${formatNumber(numQtl, 2)} Qtl)`;
+}
+
+export function formatWeight(kg) {
+  const numKg = Number(kg) || 0;
+  return `${numKg.toLocaleString('en-IN')} kg`;
 }
 
 export function formatDate(dateString) {
@@ -42,26 +49,26 @@ export function formatDate(dateString) {
   }
 }
 
+export const formatDateIndian = formatDate;
+
 export function getTodayDateString() {
   return new Date().toISOString().split('T')[0];
 }
 
-export function generateBillNumber() {
+export function generateBillNumber(prefix = 'BILL') {
   const d = new Date();
-  const yr = String(d.getFullYear()).slice(-2);
+  const yr = String(d.getFullYear());
   const mo = String(d.getMonth() + 1).padStart(2, '0');
-  const rnd = Math.floor(100 + Math.random() * 900);
-  return `YN-BILL-${yr}${mo}-${rnd}`;
+  const day = String(d.getDate()).padStart(2, '0');
+  const rnd = Math.floor(1000 + Math.random() * 9000);
+  return `${prefix}-${yr}${mo}${day}-${rnd}`;
 }
 
 export const CHILLI_VARIETIES = [
-  'Teja',
-  'Byadgi',
-  'Guntur Sannam',
-  '273',
-  'Devanur Deluxe',
-  'Armoor',
-  'Wonder Hot',
+  'Teja (S17)',
+  'Byadgi (5531)',
+  'Guntur Sannam (S4)',
   '334 / S10',
-  'Other Variety',
+  '273 Wrinkle',
+  'Fatki / Phatki',
 ];

@@ -178,3 +178,6 @@ export function generatePdfBill(billData) {
   const cleanBillNo = (billData.bill_number || billData.transaction_id || 'BILL').replace(/[^a-zA-Z0-9-_]/g, '_');
   doc.save(`Sri_YN_Bill_${cleanBillNo}.pdf`);
 }
+
+export const generateBillPdf = generatePdfBill;
+
