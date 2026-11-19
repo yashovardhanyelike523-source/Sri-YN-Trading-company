@@ -36,29 +36,19 @@ export default function App() {
     return <LoginPage />;
   }
 
-  function handleQuickAction(action) {
-    switch (action) {
-      case 'new_bill':
-        setActiveTab('billing');
-        break;
-      case 'add_purchase':
-        setActiveTab('purchases');
-        break;
-      case 'add_stock':
-        setActiveTab('inventory');
-        break;
-      case 'record_payment':
-        setActiveTab('payments');
-        break;
-      case 'upload_bill':
-        setActiveTab('bill_upload');
-        break;
-      case 'master_sheet':
-        setActiveTab('master_sheet');
-        break;
-      default:
-        setActiveTab('dashboard');
-    }
+  function handleNavigate(target) {
+    if (!target) return;
+    if (target === 'master' || target === 'master_sheet') setActiveTab('master_sheet');
+    else if (target === 'billing' || target === 'new_bill') setActiveTab('billing');
+    else if (target === 'purchases' || target === 'add_purchase') setActiveTab('purchases');
+    else if (target === 'stock' || target === 'inventory' || target === 'add_stock') setActiveTab('inventory');
+    else if (target === 'payments' || target === 'record_payment') setActiveTab('payments');
+    else if (target === 'upload' || target === 'bill_upload' || target === 'upload_bill') setActiveTab('bill_upload');
+    else if (target === 'cold_storage') setActiveTab('cold_storage');
+    else if (target === 'parties') setActiveTab('parties');
+    else if (target === 'reports') setActiveTab('reports');
+    else if (target === 'settings') setActiveTab('settings');
+    else setActiveTab(target);
   }
 
   return (
@@ -67,12 +57,12 @@ export default function App() {
       <Header />
 
       {/* Navigation Bar with Large Touch Buttons */}
-      <NavigationTabs activeTab={activeTab} onSelectTab={setActiveTab} />
+      <NavigationTabs activeTab={activeTab} onSelectTab={handleNavigate} />
 
       {/* Main Container */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-6">
         {activeTab === 'dashboard' && (
-          <DashboardPage onQuickAction={handleQuickAction} />
+          <DashboardPage onNavigate={handleNavigate} onQuickAction={handleNavigate} />
         )}
         {activeTab === 'master_sheet' && (
           <MasterSheetPage />

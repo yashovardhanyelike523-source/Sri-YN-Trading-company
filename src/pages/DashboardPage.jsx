@@ -22,7 +22,8 @@ import {
   RefreshCw,
 } from 'lucide-react';
 
-export default function DashboardPage({ onNavigate }) {
+export default function DashboardPage({ onNavigate, onQuickAction }) {
+  const navigate = onNavigate || onQuickAction || (() => {});
   const { lang, t } = useLang();
   const [metrics, setMetrics] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -144,7 +145,7 @@ export default function DashboardPage({ onNavigate }) {
           {/* Action 1: New Bill */}
           <button
             type="button"
-            onClick={() => onNavigate('billing')}
+            onClick={() => navigate('billing')}
             className="flex flex-col items-center justify-center p-4 sm:p-5 rounded-2xl bg-gradient-to-b from-red-600 to-red-800 hover:from-red-700 hover:to-red-900 text-white shadow-lg shadow-red-950/20 transition transform active:scale-95 cursor-pointer group text-center"
           >
             <div className="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center mb-2.5 group-hover:scale-110 transition">
@@ -161,7 +162,7 @@ export default function DashboardPage({ onNavigate }) {
           {/* Action 2: Add Purchase */}
           <button
             type="button"
-            onClick={() => onNavigate('purchases')}
+            onClick={() => navigate('purchases')}
             className="flex flex-col items-center justify-center p-4 sm:p-5 rounded-2xl bg-gradient-to-b from-blue-700 to-blue-900 hover:from-blue-800 hover:to-blue-950 text-white shadow-lg shadow-blue-950/20 transition transform active:scale-95 cursor-pointer group text-center"
           >
             <div className="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center mb-2.5 group-hover:scale-110 transition">
@@ -178,7 +179,7 @@ export default function DashboardPage({ onNavigate }) {
           {/* Action 3: Add Stock Lot */}
           <button
             type="button"
-            onClick={() => onNavigate('stock')}
+            onClick={() => navigate('stock')}
             className="flex flex-col items-center justify-center p-4 sm:p-5 rounded-2xl bg-gradient-to-b from-emerald-700 to-emerald-900 hover:from-emerald-800 hover:to-emerald-950 text-white shadow-lg shadow-emerald-950/20 transition transform active:scale-95 cursor-pointer group text-center"
           >
             <div className="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center mb-2.5 group-hover:scale-110 transition">
@@ -195,7 +196,7 @@ export default function DashboardPage({ onNavigate }) {
           {/* Action 4: Record Payment */}
           <button
             type="button"
-            onClick={() => onNavigate('payments')}
+            onClick={() => navigate('payments')}
             className="flex flex-col items-center justify-center p-4 sm:p-5 rounded-2xl bg-gradient-to-b from-purple-700 to-purple-900 hover:from-purple-800 hover:to-purple-950 text-white shadow-lg shadow-purple-950/20 transition transform active:scale-95 cursor-pointer group text-center"
           >
             <div className="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center mb-2.5 group-hover:scale-110 transition">
@@ -212,7 +213,7 @@ export default function DashboardPage({ onNavigate }) {
           {/* Action 5: Upload Bill Photo */}
           <button
             type="button"
-            onClick={() => onNavigate('upload')}
+            onClick={() => navigate('upload')}
             className="flex flex-col items-center justify-center p-4 sm:p-5 rounded-2xl bg-gradient-to-b from-teal-700 to-teal-900 hover:from-teal-800 hover:to-teal-950 text-white shadow-lg shadow-teal-950/20 transition transform active:scale-95 cursor-pointer group text-center"
           >
             <div className="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center mb-2.5 group-hover:scale-110 transition">
@@ -229,7 +230,7 @@ export default function DashboardPage({ onNavigate }) {
           {/* Action 6: Open Central Master Sheet (Highlighted) */}
           <button
             type="button"
-            onClick={() => onNavigate('master')}
+            onClick={() => navigate('master')}
             className="flex flex-col items-center justify-center p-4 sm:p-5 rounded-2xl bg-gradient-to-b from-amber-500 to-amber-700 hover:from-amber-600 hover:to-amber-800 text-slate-950 shadow-lg shadow-amber-950/20 transition transform active:scale-95 cursor-pointer group text-center ring-2 ring-amber-400"
           >
             <div className="w-12 h-12 rounded-2xl bg-slate-950/15 flex items-center justify-center mb-2.5 group-hover:scale-110 transition">
@@ -252,7 +253,7 @@ export default function DashboardPage({ onNavigate }) {
           return (
             <div
               key={card.id}
-              onClick={() => onNavigate(card.actionTab)}
+              onClick={() => navigate(card.actionTab)}
               className="bg-white rounded-3xl p-6 border-2 border-slate-200 shadow-sm hover:shadow-xl hover:border-red-400 transition transform hover:-translate-y-1 cursor-pointer flex flex-col justify-between"
             >
               <div>
@@ -298,7 +299,7 @@ export default function DashboardPage({ onNavigate }) {
           </div>
           <button
             type="button"
-            onClick={() => onNavigate('master')}
+            onClick={() => navigate('master')}
             className="flex items-center gap-1.5 px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs sm:text-sm font-bold rounded-xl transition cursor-pointer"
           >
             <span>{lang === 'te' ? 'మొత్తం రిజిస్టర్ చూడండి' : 'Open Full Master Sheet'}</span>
