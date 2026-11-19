@@ -9,8 +9,8 @@ export default function LoginPage() {
   const { lang, setLang } = useLang();
   const { showError, showSuccess } = useToast();
 
-  const [email, setEmail] = useState('admin@sriyntrading.com');
-  const [password, setPassword] = useState('Admin@123456');
+  const [email, setEmail] = useState('yashovardhanyelike5@gmail.com');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 

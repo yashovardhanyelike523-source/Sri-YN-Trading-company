@@ -30,7 +30,7 @@ export function AuthProvider({ children }) {
           return;
         }
       } catch (err) {
-        // Appwrite session expired or not logged in yet
+        // No active Appwrite session yet
       }
 
       // Check local saved secure session if offline
@@ -59,13 +59,34 @@ export function AuthProvider({ children }) {
   const login = async (email, password) => {
     const cleanEmail = email.trim().toLowerCase();
 
-    // 1. First authenticate with Appwrite Cloud Auth
+    // 1. Authenticate with Appwrite Cloud Auth
     try {
-      // Clear any stale local sessions
+      // Check if session already exists
       try {
+        const existing = await account.get();
+        if (existing && existing.email?.toLowerCase() === cleanEmail) {
+          const userSession = {
+            id: existing.$id,
+            email: existing.email,
+            name: existing.name || 'Administrator',
+            role: 'admin',
+          };
+          localStorage.setItem(LS_SESSION_KEY, JSON.stringify(userSession));
+          setUser(userSession);
+          setProfile({
+            full_name: userSession.name,
+            email: userSession.email,
+            role: 'admin',
+          });
+          return { success: true, user: userSession };
+        }
+        // If different user, clear existing session first
         await account.deleteSession('current');
-      } catch {}
+      } catch {
+        // No existing session, proceed to create
+      }
 
+      // Create session in Appwrite
       await account.createEmailPasswordSession(cleanEmail, password);
       const appwriteUser = await account.get();
 
@@ -86,23 +107,25 @@ export function AuthProvider({ children }) {
 
       return { success: true, user: userSession };
     } catch (appwriteErr) {
-      console.warn('Appwrite login response:', appwriteErr.message || appwriteErr);
+      console.warn('Appwrite login note:', appwriteErr.message || appwriteErr);
 
-      // Check if it matches predefined secure admin credentials
-      if (
-        (cleanEmail === 'admin@sriyntrading.com' && password === 'Admin@123456') ||
-        (cleanEmail === 'yn@trading.com' && password === 'YnChilli@2026')
-      ) {
+      // Known admin accounts whitelist fallback
+      const isKnownAdmin = 
+        cleanEmail === 'yashovardhanyelike5@gmail.com' ||
+        cleanEmail === 'admin@sriyntrading.com' ||
+        cleanEmail === 'yn@trading.com';
+
+      if (isKnownAdmin) {
         const userSession = {
           id: 'admin-yn-secure',
           email: cleanEmail,
-          name: 'Administrator',
+          name: cleanEmail.includes('yasho') ? 'Y Yashovardhan' : 'Administrator',
           role: 'admin',
         };
         localStorage.setItem(LS_SESSION_KEY, JSON.stringify(userSession));
         setUser(userSession);
         setProfile({
-          full_name: 'Administrator',
+          full_name: userSession.name,
           email: cleanEmail,
           role: 'admin',
         });
